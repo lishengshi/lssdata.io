@@ -9,8 +9,8 @@
     <version>1.0-SNAPSHOT</version>
 
 
-    <dependencies>
 
+    <dependencies>
         <dependency>
             <groupId>org.elasticsearch.client</groupId>
             <artifactId>transport</artifactId>
@@ -56,7 +56,208 @@
             <scope>compile</scope>
         </dependency>
 
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-sql_2.11</artifactId>
+            <version>2.1.1</version>
+            <scope>compile</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-streaming_2.11</artifactId>
+            <version>2.1.1</version>
+            <scope>compile</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.scala-lang</groupId>
+            <artifactId>scala-library</artifactId>
+            <version>2.11.8</version>
+            <scope>compile</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-streaming-kafka-0-10_2.11</artifactId>
+            <version>2.1.1</version>
+            <scope>compile</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.elasticsearch</groupId>
+            <artifactId>elasticsearch-spark-20_2.11</artifactId>
+            <version>5.6.11</version>
+            <scope>compile</scope>
+        </dependency>
+
     </dependencies>
+
+    <build>
+        <finalName>IExercise</finalName>
+
+        <resources>
+
+            <resource>
+                <directory>src/main/resources</directory>
+                <includes>
+                    <include>*</include>
+                </includes>
+                <filtering>false</filtering>
+            </resource>
+            <resource>
+                <directory>src/main/resources</directory>
+                <includes>
+                    <include>template/*</include>
+                </includes>
+                <filtering>false</filtering>
+            </resource>
+            <resource>
+                <directory>src/main/scala</directory>
+                <includes>
+                    <include>**.java</include>
+                    <include>**.scala</include>
+                    <!--<include>com/jx/dao/*/*.xml</include>-->
+                    <!--<include>com/jx/*.xml</include>-->
+                </includes>
+            </resource>
+        </resources>
+        <plugins>
+
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.0.0</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <filters>
+                                <filter>
+                                    <artifact>*:*</artifact>
+                                    <excludes>
+                                        <exclude>META-INF/*.SF</exclude>
+                                        <exclude>META-INF/*.DSA</exclude>
+                                        <exclude>META-INF/*.RSA</exclude>
+                                    </excludes>
+                                </filter>
+                            </filters>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                </configuration>
+            </plugin>
+
+        </plugins>
+    </build>
+
+    <profiles>
+        <profile>
+            <id>test</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <jx.mysql.classname>com.mysql.jdbc.Driver</jx.mysql.classname>
+                <jx.mysql.jdbcurl>jdbc:mysql://192.168.3.4:3306/data_v2?useUnicode=true&amp;characterEncoding=UTF-8&amp;zeroDateTimeBehavior=convertToNull</jx.mysql.jdbcurl>
+                <jx.mysql.user>test_jxdata</jx.mysql.user>
+                <jx.mysql.password>test_jxdata</jx.mysql.password>
+                <jx.mysql.minPoolSize>5</jx.mysql.minPoolSize>
+                <jx.mysql.acquireIncrement>5</jx.mysql.acquireIncrement>
+                <jx.mysql.maxPoolSize>100</jx.mysql.maxPoolSize>
+                <jx.mysql.maxIdleTime>600</jx.mysql.maxIdleTime>
+
+                <jx.kafka.brokers>39.105.17.117:9092,47.93.200.251:9092,39.105.178.221:9092</jx.kafka.brokers>
+                <jx.kafka.host>39.105.17.117</jx.kafka.host>
+                <jx.kafka.cluster.brokers>172.17.228.211:9092,172.17.228.212:9092,172.17.7.207:9092</jx.kafka.cluster.brokers>
+
+                <jx.zookeeper>39.105.17.117:2181,47.93.200.251:2181,39.105.178.221:2181</jx.zookeeper>
+                <jx.zookeeper.clusters>172.17.228.211:2181,172.17.228.212:2181,172.17.7.207:2181</jx.zookeeper.clusters>
+
+                <!-- redis -->
+                <redis.addr>39.105.17.117</redis.addr>
+                <redis.port>6379</redis.port>
+                <redis.auth>KingStarDi1@#</redis.auth>
+                <redis.databaseIndex>0</redis.databaseIndex>
+                <redis.maxIdle>200</redis.maxIdle>
+                <redis.maxActive>1024</redis.maxActive>
+                <redis.maxWait>10000</redis.maxWait>
+                <redis.timeOut>10000</redis.timeOut>
+                <redis.testOnBorrow>true</redis.testOnBorrow>
+
+                <jx.web.url>http://192.168.3.164:8080</jx.web.url>
+                <jx.web.params>?X-Requested-Key=123456</jx.web.params>
+
+                <jx.process.news.insert.url>http://47.95.199.7/api/v1/news/insert</jx.process.news.insert.url>
+
+                <jx.es.host>39.105.178.221</jx.es.host>
+                <jx.es.cluster.host>39.105.17.117,47.93.200.251,39.105.178.221</jx.es.cluster.host>
+                <jx.es.port>9200</jx.es.port>
+                <jx.es.cluster.name>jxkj-data-test-es</jx.es.cluster.name>
+            </properties>
+        </profile>
+
+        <profile>
+            <id>online</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <jx.mysql.classname>com.mysql.jdbc.Driver</jx.mysql.classname>
+                <jx.mysql.jdbcurl>jdbc:mysql://192.168.3.6:3306/data_v2?useUnicode=true&amp;characterEncoding=UTF-8&amp;zeroDateTimeBehavior=convertToNull</jx.mysql.jdbcurl>
+                <jx.mysql.user>private_data</jx.mysql.user>
+                <jx.mysql.password>private_data</jx.mysql.password>
+                <jx.mysql.minPoolSize>5</jx.mysql.minPoolSize>
+                <jx.mysql.acquireIncrement>5</jx.mysql.acquireIncrement>
+                <jx.mysql.maxPoolSize>100</jx.mysql.maxPoolSize>
+                <jx.mysql.maxIdleTime>600</jx.mysql.maxIdleTime>
+
+                <jx.kafka.brokers>39.97.177.140:9092,39.97.168.108:9092,39.97.177.175:9092,39.97.178.116:9092,39.97.178.112:9092</jx.kafka.brokers>
+                <jx.kafka.host>39.97.177.140</jx.kafka.host>
+                <jx.kafka.cluster.brokers>172.17.7.210:9092,172.17.7.213:9092,172.17.7.209:9092,172.17.7.212:9092,172.17.7.211:9092</jx.kafka.cluster.brokers>
+
+                <jx.zookeeper>39.97.178.112:2181,39.97.178.116:2181,39.97.168.108:2181</jx.zookeeper>
+                <jx.zookeeper.clusters>172.17.7.211:2181,172.17.7.212:2181,172.17.7.213:2181</jx.zookeeper.clusters>
+
+                <!-- redis -->
+                <redis.addr>39.97.177.140</redis.addr>
+                <redis.port>6379</redis.port>
+                <redis.auth>Kingstardi</redis.auth>
+                <redis.databaseIndex>0</redis.databaseIndex>
+                <redis.maxIdle>200</redis.maxIdle>
+                <redis.maxActive>1024</redis.maxActive>
+                <redis.maxWait>10000</redis.maxWait>
+                <redis.timeOut>10000</redis.timeOut>
+                <redis.testOnBorrow>true</redis.testOnBorrow>
+
+                <jx.web.url>http://192.168.3.164:8080</jx.web.url>
+                <jx.web.params>?X-Requested-Key=123456</jx.web.params>
+
+                <jx.process.news.insert.url>http://kingstardi.com/api/v1/news/insert</jx.process.news.insert.url>
+
+                <!--<jx.es.host>39.97.177.140</jx.es.host>-->
+                <!--test http://39.105.178.221 -->
+                <jx.es.host>39.97.177.140</jx.es.host>
+                <jx.es.cluster.host>39.97.177.140,39.97.168.108,39.97.177.175,39.97.178.116,39.97.178.112</jx.es.cluster.host>
+                <jx.es.port>9200</jx.es.port>
+                <jx.es.cluster.name>jxkj-data-es</jx.es.cluster.name>
+
+            </properties>
+        </profile>
+
+    </profiles>
 
 
 
