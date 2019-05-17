@@ -55,7 +55,6 @@ object Demo3 {
     val scoreRdd:DataFrame= spark.sparkContext.textFile("E:\\idea_home\\IExercise\\src\\main\\resources\\data.spark\\TableB.txt", 10)
       .map(line => line.split(",")).map(x => (x(0).toLong, x(1).toLong)).toDF("ID","SCORE")
 
-
     //mapGroups 和 mapValues区别：
     scoreRdd.groupByKey(_.getLong(0)).mapGroups((id,groups)=>{
 
