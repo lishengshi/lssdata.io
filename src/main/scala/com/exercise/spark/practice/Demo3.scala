@@ -3,7 +3,7 @@ package com.exercise.spark.practice
 
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.types.{StringType, StructField, StructType}
-import org.apache.spark.sql.{DataFrame, Row, SparkSession}
+import org.apache.spark.sql._
 import org.apache.spark.storage.StorageLevel
 import org.apache.spark.{SparkConf, SparkContext}
 
@@ -41,7 +41,7 @@ object Demo3 {
     val sc: SparkContext = new SparkContext(sparkConf)
     val spark = SparkSession.builder().appName("Spark SQL basic example").config("spark.some.config.option", "some-value").getOrCreate()
 
-    demo31(spark)
+
     demo32(spark)
 
 
@@ -55,12 +55,25 @@ object Demo3 {
 
     val scoreRdd:DataFrame= spark.sparkContext.textFile("E:\\idea_home\\IExercise\\src\\main\\resources\\data.spark\\TableB.txt", 10)
       .map(line => line.split(",")).map(x => (x(0).toLong, x(1).toLong)).toDF("ID","SCORE")
-
-    //mapGroups 和 mapValues区别：
-    scoreRdd.groupByKey(_.getLong(0)).mapGroups((id,groups)=>{
-
-    })
-
+    //dataframe 也有groupByKey等算子,而且生成的结果是key，
+    val group: KeyValueGroupedDataset[Long, Row] = scoreRdd.groupByKey(_.getLong(0))
+    val res: DataFrame = group.mapGroups((id, groups) => {
+      var sum = 0L
+      var num = 0L
+      for (k <- groups) {
+        val score: Long = k.getLong(1)
+        sum += score
+        num += 1
+      }
+      val avg = sum.toDouble / num.toDouble
+      val pass = if (avg >= 60) 1 else 0
+      (id, sum, avg.formatted("%.2f"), pass)
+    }).toDF("ID", "TOTALSCORE", "AVGSCORE", "PASS")
+    //join leftOuterJoin rightOuterJoin
+    //$操作符是引用变量作用
+    val result: Dataset[Row] = res.join(nameRdd,"ID").orderBy($"TOTALSCORE".desc)
+    //dataset保存为外部文件格式
+    result.repartition(5).write.mode(SaveMode.Overwrite).json("E:\\temp\\spark\\demo3")
   }
 
   def demo31(spark:SparkSession):Unit={
