@@ -42,6 +42,7 @@ object Demo3 {
     val spark = SparkSession.builder().appName("Spark SQL basic example").config("spark.some.config.option", "some-value").getOrCreate()
 
     demo31(spark)
+    demo32(spark)
 
 
 
