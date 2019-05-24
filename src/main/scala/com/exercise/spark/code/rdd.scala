@@ -9,7 +9,6 @@ object rdd extends App {
 
   val sc: SparkContext = SparkSessionUtil.getSc
 
-
   if (0){
     //rdd是一个集合 类似于list的作用
     //parallelize从scala集合中生成
@@ -326,6 +325,7 @@ object rdd extends App {
     //Array[(Int, (Iterable[String], Iterable[String], Iterable[String]))] = Array((1,(CompactBuffer(b, b),CompactBuffer(c, c),CompactBuffer(d, d))), (3,(CompactBuffer(b),CompactBuffer(c),CompactBuffer(d))), (2,(CompactBuffer(b),CompactBuffer(c),CompactBuffer(d))))
   }
 
+
   val distinct_sample = 0
   if (0) {
     val rdd = sc.parallelize(Seq(1, 2, 3, 3))
@@ -549,12 +549,12 @@ object rdd extends App {
   //见笔记spark调优-01代码调优
 
   val 分区Partition = 0
-  if (0) {
+  if (1) {
     import org.apache.spark.HashPartitioner
     import org.apache.spark.RangePartitioner
 
     println("partitionBy的使用========================================================================")
-    if (0) {
+    if (1) {
       //参考：https://blog.csdn.net/zhangzeyuan56/article/details/80935034
       println("HashPartitioner================")
       //HashPartitioner确定分区的方式：partition = key.hashCode () % numPartitions
@@ -575,6 +575,7 @@ object rdd extends App {
       class CustomPartitioner(numParts: Int) extends Partitioner {
         //分多少个区
         override def numPartitions: Int = numParts
+
         //什么数据放到哪个区
         override def getPartition(key: Any): Int = {
           if (key == 2) {
@@ -601,16 +602,18 @@ object rdd extends App {
       //如果一个RDD需要多次在join(特别是迭代)中使用,那么事先使用partitionBy对RDD进行分区,可以减少大量的shuffle
       //参考：https://blog.csdn.net/wy250229163/article/details/52388305
       //https://blog.csdn.net/yhb315279058/article/details/50955282
-
       val rdd1 = sc.parallelize(Array((1, 1), (1, 2), (2, 1), (3, 1), (1, 2), (2, 1), (3, 1))).
         partitionBy(new HashPartitioner(2)).persist()
       val rdd2 = sc.parallelize(Array((1, 'x'), (2, 'y'), (2, 'z'), (4, 'w'), (2, 'y'), (2, 'z'), (4, 'w')))
       //有优化效果,rdd1不再需要shuffle
-      val (res1, time1) = getMethodRunTime(rdd1.join(rdd2))
+      val (res1, time1): (RDD[(Int, (Int, Char))], String) = getMethodRunTime(rdd1.join(rdd2))
       //有优化效果,rdd1不再需要shuffle
-      val (res2, time2) = getMethodRunTime(rdd1.join(rdd2, new HashPartitioner(2)))
+      val (res2, time2) = getMethodRunTime(rdd1.join(rdd2,new HashPartitioner(2)))
       //无优化效果,rdd1需要再次shuffle
-      val (res3, time3) = getMethodRunTime(rdd1.join(rdd2, new HashPartitioner(3)))
+      val (res3, time3) = getMethodRunTime(rdd1.join(rdd2, new HashPartitioner(5)))
+      println((res1, time1)._2)
+      println((res2, time2)._2)
+      println((res3, time3)._2)
     }
 
     println("计算质数通过分区(Partition)提高Spark的运行性能=============================================")
